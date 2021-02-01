@@ -27,7 +27,7 @@ if(row.length > 0)
 
 router.get('/getUser?',(req,res)=>{
 
-    conn.query('select name from user where id = ?',[req.query.id],(err,row)=>{
+    conn.query('select * from user where id = ?',[req.query.id],(err,row)=>{
         if(err)
         {
             res.send({
@@ -45,6 +45,14 @@ router.get('/getUser?',(req,res)=>{
                 message:'Success'
             })
         }
+        else
+        {
+            res.send({
+                status:'200',
+                user:[],
+                message:'No Record Found'
+            })
+        }
     })
 
 
@@ -53,35 +61,36 @@ router.get('/getUser?',(req,res)=>{
 
 router.get('/del?',(req,res)=>{
 
-    var finder = conn.query('select * from user where id = ?',(req.query.id),(err,row)=>{
-        if(finder.length == 0)
+    conn.query('select * from user where id = ?',(req.query.id),(err,row)=>{
+      
+        if(row.length > 0)
+        {
+            conn.query('delete from user where id = ?',(req.query.id),(err)=>{
+                if(err)
+                {
+                    res.send({
+                        status:'400',
+                        message:'Error: '+err
+                    })
+                }
+                else
+                {
+                    res.send({
+                        status:'200',
+                        message:'Deleted'
+                    })
+                }
+        })
+        
+        }
+        else
         {
             res.send({
-                status:finder.length
+                status:'400',
+                message:'No Data Exist'
             })
         }
-        
     })
-
-conn.query('delete from user where id = ?',(req.query.id),(err,row)=>{
-    if(err)
-    {
-        res.send({
-            status:'400',
-            message:'Error: '+err
-        })
-    }
-    else
-    {
-        res.send({
-            status:'200',
-            message:'Deleted'
-        })
-    }
-
-
-})
-
 });
 
 
