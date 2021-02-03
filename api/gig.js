@@ -61,8 +61,25 @@ router.get('/category', (req, res) => {
 
 //SubCategory Api
 
-router.get('/subcat?', (req, res) => {
-    conn.query('select CATID,name from categories where type=1 and status=0 and parent = ?', [req.query.category], (err, row) => {
+
+router.get('/subcat?',(req,res)=>{
+    conn.query('select CATID,name from categories where type=1 and status=0 and parent = ?',[req.query.category],(err,row)=>{
+        if(!err && row.length > 0)
+        {
+            res.send({
+                status:200,
+                message: 'Record Found',
+                subCategory:row
+            })
+        }
+        else
+        {
+            res.send({
+                status:400,
+                message: 'Record Not Found',
+                subCategory:[]
+            })
+        }
 
     })
 })
@@ -140,7 +157,7 @@ router.post('/uploadgig', upload.single('image'), (req, res) => {
         const path = req.file.path;
         var date = moment().format('YYYY-MM-DD HH:mm:ss');
         conn.query('SELECT * FROM sell_gigs ORDER BY ID DESC limit 1', (err, row33) => {
-            
+
             conn.query('insert into gigs_image(gig_id,image_path,gig_image_thumb,gig_image_tile,gig_image_medium,created_date) values(?,?,?,?,?,?)', [row33[0].id, path, path, path, path, date], (err, row1) => {
 
 
