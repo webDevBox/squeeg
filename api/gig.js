@@ -62,22 +62,20 @@ router.get('/category', (req, res) => {
 //SubCategory Api
 
 
-router.get('/subcat?',(req,res)=>{
-    conn.query('select CATID,name from categories where type=1 and status=0 and parent = ?',[req.query.category],(err,row)=>{
-        if(!err && row.length > 0)
-        {
+router.get('/subcat?', (req, res) => {
+    conn.query('select CATID,name from categories where type=1 and status=0 and parent = ?', [req.query.category], (err, row) => {
+        if (!err && row.length > 0) {
             res.send({
-                status:200,
+                status: 200,
                 message: 'Record Found',
-                subCategory:row
+                subCategory: row
             })
         }
-        else
-        {
+        else {
             res.send({
-                status:400,
+                status: 400,
                 message: 'Record Not Found',
-                subCategory:[]
+                subCategory: []
             })
         }
 
@@ -206,6 +204,31 @@ router.get('/allgigs?', (req, res) => {
 
 });
 //end
+
+//seller offers on buyer request
+
+router.get('/alloffers?', (req, res) => {
+    conn.query('select seller_offer.sno,seller_offer.revision,seller_offer.duration,seller_offer.description,seller_offer.budget,sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,gigs_image.image_path from seller_offer left JOIN sell_gigs on seller_offer.gig_id=sell_gigs.id left join gigs_image on sell_gigs.id=gigs_image.gig_id where seller_offer.request_id=?', [req.query.id], (err1, row12) => {
+        if (row12.length > 0) {
+
+            res.send({
+                status: '200',
+                offers: row12
+            })
+
+        }
+        else {
+            res.send({
+                status: '400',
+                offers: []
+            })
+        }
+    })
+
+
+});
+//end
+
 
 
 
