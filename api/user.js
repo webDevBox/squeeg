@@ -113,8 +113,6 @@ else{
     conn.query('INSERT INTO members(email,username,password,fullname,verified,status,country,state,city,created_date,otp) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[req.query.email,req.query.username,pass,req.query.fullname,1,1,req.query.country,req.query.state,req.query.city,date,otp ],(err,row)=>{
 
         if(!err){
-
-
         var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
