@@ -36,7 +36,22 @@ router.get('/category',(req,res)=>{
 
 router.get('/subcat?',(req,res)=>{
     conn.query('select CATID,name from categories where type=1 and status=0 and parent = ?',[req.query.category],(err,row)=>{
-        
+        if(!err && row.length > 0)
+        {
+            res.send({
+                status:200,
+                message: 'Record Found',
+                subCategory:row
+            })
+        }
+        else
+        {
+            res.send({
+                status:400,
+                message: 'Record Not Found',
+                subCategory:[]
+            })
+        }
     })
 })
 
