@@ -109,9 +109,7 @@ if(row11.length>0){
 
 }
 else{
-    
     var otp = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-       
     conn.query('INSERT INTO members(email,username,password,fullname,verified,status,country,state,city,created_date,otp) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[req.query.email,req.query.username,pass,req.query.fullname,1,1,req.query.country,req.query.state,req.query.city,date,otp ],(err,row)=>{
 
         if(!err){
@@ -129,7 +127,7 @@ else{
             from: 'digitalinnovation13@gmail.com',
             to: req.query.email,
             subject: 'Account Verification',
-            html: '<html><body><center> <h3>Here is your otp</h3><h4>'+otp+'</h4>   </center></body></html>'
+            html: '<html><body><center> <h3>Here is your otp</h3><h4>'+otp+'</h4> </center></body></html>'
           };
           
           transporter.sendMail(mailOptions, function(error, info){
@@ -409,6 +407,88 @@ router.post('/upload', upload.single('image'), (req, res) => {
 });
 
 //end
+
+
+
+//Country Api
+
+router.get('/country',(req,res)=>{
+conn.query('select id,country from country',(err,row)=>{
+        if(!err && row.length > 0)
+        {
+            res.send({
+                status:200,
+                message: 'Record Found',
+                country:row
+            })
+        }
+        else
+        {
+            res.send({
+                status:400,
+                message: 'Record Not Found',
+                country:[]
+            })
+        }
+})
+});
+
+//End
+
+
+//State Api
+
+router.get('/state?',(req,res)=>{
+conn.query('select state_id,state_name from states where country_id = ?',[req.query.country],(err,row)=>{
+    if(!err && row.length > 0)
+    {
+        res.send({
+            status:200,
+            message: 'Record Found',
+            state:row
+        })
+    }
+    else
+    {
+        res.send({
+            status:400,
+            message: 'Record Not Found',
+            state:[]
+        })
+    }
+})
+});
+
+//End
+
+
+//City Api
+
+router.get('/city?',(req,res)=>{
+
+    conn.query('select city_id,city_name from cities where state_id=?',[req.query.state],(err,row)=>{
+        if(!err && row.length > 0)
+        {
+            res.send({
+                status:200,
+                message: 'Record Found',
+                city:row
+            })
+        }
+        else
+        {
+            res.send({
+                status:400,
+                message: 'Record Not Found',
+                city:[]
+            })
+        }
+    })
+
+});
+
+//End
+
 
 
 
