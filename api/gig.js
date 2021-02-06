@@ -100,7 +100,7 @@ router.get('/subcat?',(req,res)=>{
 router.post('/create_gig_seller?', (req, res) => {
     var date = moment().format('YYYY-MM-DD HH:mm:ss');
 
-    const path = req.file.path;
+    //const path = req.file.path;
 
     if (!req.query.fast_charges === '') {
 
@@ -110,7 +110,7 @@ router.post('/create_gig_seller?', (req, res) => {
             if (!err) {
 
                 res.send({
-                    status: '200',
+                    status: 200,
                     message: 'gig inserted'
                 })
 
@@ -118,7 +118,7 @@ router.post('/create_gig_seller?', (req, res) => {
             }
             else {
                 res.send({
-                    status: '400',
+                    status: 400,
                     message: 'gig not inserted'
                 })
             }
@@ -134,14 +134,14 @@ router.post('/create_gig_seller?', (req, res) => {
 
             if (!err) {
                 res.send({
-                    status: '200',
+                    status: 200,
                     message: 'gig inserted'
                 })
             }
             else {
                 console.log(err);
                 res.send({
-                    status: '400',
+                    status: 400,
                     message: 'gig not inserted'
                 })
             }
@@ -206,15 +206,15 @@ router.post('/uploadgig', upload.single('image'), (req, res) => {
             conn.query('insert into gigs_image(gig_id,image_path,gig_image_thumb,gig_image_tile,gig_image_medium,created_date) values(?,?,?,?,?,?)', [row33[0].id, path, path, path, path, date], (err, row1) => {
 
 
-                if (!err) {
+                if (!err) { 
 
                     res.send({
-                        status: '200',
+                        status: 200,
                         message: 'picture uploaded',
                     })
                 } else {
                     res.send({
-                        status: '400',
+                        status: 400,
                         message: 'not uploaded',
                         err: err
                     })
@@ -228,21 +228,21 @@ router.post('/uploadgig', upload.single('image'), (req, res) => {
 //end
 
 
-//all gigs
+//      x gigs
 
 router.get('/allgigs?', (req, res) => {
     conn.query('select * from sell_gigs where user_id !=?', [req.query.id], (err1, row12) => {
         if (row12.length > 0) {
 
             res.send({
-                status: '200',
+                status: 200,
                 gigs: row12
             })
 
         }
         else {
             res.send({
-                status: '400',
+                status: 400,
                 gigs: []
             })
         }
@@ -259,14 +259,14 @@ router.get('/alloffers?', (req, res) => {
         if (row12.length > 0) {
 
             res.send({
-                status: '200',
+                status: 200,
                 offers: row12
             })
 
         }
         else {
             res.send({
-                status: '400',
+                status: 400,
                 offers: []
             })
         }
@@ -276,6 +276,7 @@ router.get('/alloffers?', (req, res) => {
 });
 //end
 
+//
 
 
 

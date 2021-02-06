@@ -7,7 +7,8 @@ const multer = require('multer');
 var nodemailer = require('nodemailer');
 var fs = require('fs');
 var crypto = require('crypto');
-var path = require('path')
+var path = require('path');
+const { Console } = require('console');
 
 
 
@@ -20,20 +21,20 @@ router.post('/login?', (req, res) => {
         if (row.length > 0) {
             const pass = md5(req.query.password);
 
-            conn.query('select * from members where email = ? and password = ? and status = 0', [req.query.email, pass], (err1, row1) => {
+            conn.query('select * from members where email = ? and password = ? ', [req.query.email, pass], (err1, row1) => {
 
                 if (row1.length > 0) {
                     conn.query('update members set status = 0 where email = ?', [req.query.email], (err1, row2) => {
 
                         res.send({
-                            status: '200',
+                            status: 200,
                             message: 'loggin',
                             user: row1[0]
                         })
                     })
                 } else {
                     res.send({
-                        status: '400',
+                        status: 400,
                         message: 'password invalid'
                     })
                 }
@@ -52,14 +53,14 @@ router.post('/login?', (req, res) => {
                             conn.query('update members set status = 0 where username = ?', [req.query.email], (err1, row2) => {
 
                                 res.send({
-                                    status: '200',
+                                    status: 200,
                                     message: 'loggin',
                                     user: row1[0]
                                 })
                             })
                         } else {
                             res.send({
-                                status: '400',
+                                status: 400,
                                 message: 'password invalid'
                             })
                         }
@@ -68,7 +69,7 @@ router.post('/login?', (req, res) => {
                 } else {
 
                     res.send({
-                        status: '400',
+                        status: 400,
                         message: 'email and password not exist'
                     })
                 }
@@ -90,7 +91,7 @@ router.post('/signup?', (req, res) => {
 
         if (row11.length > 0) {
             res.send({
-                status: '400',
+                status: 400,
                 message: 'email or user already exist',
             })
 
@@ -98,69 +99,69 @@ router.post('/signup?', (req, res) => {
         }
         else {
             var otp = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-            conn.query('INSERT INTO members(email,username,password,fullname,verified,status,country,state,city,created_date,otp) VALUES(?,?,?,?,?,?,?,?,?,?,?)', [req.query.email, req.query.username, pass, req.query.fullname, 1, 1, req.query.country, req.query.state, req.query.city, date, otp], (err, row) => {
+            conn.query('INSERT INTO members(email,username,password,fullname,verified,status,country,state,city,user_timezone,created_date,otp) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', [req.query.email, req.query.username, pass, req.query.fullname, 1, 1, req.query.country, req.query.state, req.query.city, req.query.user_timezone, date, otp], (err, row) => {
 
 
-        if(!err){
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-              user: 'digitalinnovation13@gmail.com',
-              pass: 'Allahisgreate'
-            }
-          });
-          
-          var mailOptions = {
-            from: 'digitalinnovation13@gmail.com',
-            to: req.query.email,
-            subject: 'Account Verification',
-            html: '<html><body><center> <h3>Here is your otp</h3><h4>'+otp+'</h4> </center></body></html>'
-          };
-          
-          transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-              console.log(error);
-            } else {
-              console.log('Email sent: ' + info.response);
-            }
-          });
-// =======
-//                 if (!err) {
+                if (!err) {
+                    var transporter = nodemailer.createTransport({
+                        service: 'gmail',
+                        auth: {
+                            user: 'digitalinnovation13@gmail.com',
+                            pass: 'Allahisgreate'
+                        }
+                    });
+
+                    var mailOptions = {
+                        from: 'digitalinnovation13@gmail.com',
+                        to: req.query.email,
+                        subject: 'Account Verification',
+                        html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
+                    };
+
+                    transporter.sendMail(mailOptions, function (error, info) {
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            console.log('Email sent: ' + info.response);
+                        }
+                    });
+                    // =======
+                    //                 if (!err) {
 
 
-//                     var transporter = nodemailer.createTransport({
-//                         service: 'gmail',
-//                         auth: {
-//                             user: 'digitalinnovation13@gmail.com',
-//                             pass: 'Allahisgreate'
-//                         }
-//                     });
+                    //                     var transporter = nodemailer.createTransport({
+                    //                         service: 'gmail',
+                    //                         auth: {
+                    //                             user: 'digitalinnovation13@gmail.com',
+                    //                             pass: 'Allahisgreate'
+                    //                         }
+                    //                     });
 
-//                     var mailOptions = {
-//                         from: 'digitalinnovation13@gmail.com',
-//                         to: req.query.email,
-//                         subject: 'Account Verification',
-//                         html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
-//                     };
+                    //                     var mailOptions = {
+                    //                         from: 'digitalinnovation13@gmail.com',
+                    //                         to: req.query.email,
+                    //                         subject: 'Account Verification',
+                    //                         html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
+                    //                     };
 
-//                     transporter.sendMail(mailOptions, function (error, info) {
-//                         if (error) {
-//                             console.log(error);
-//                         } else {
-//                             console.log('Email sent: ' + info.response);
-//                         }
-//                     });
-// >>>>>>> 04b91297f588ca0467e02ca1389c5c2b8851191b
+                    //                     transporter.sendMail(mailOptions, function (error, info) {
+                    //                         if (error) {
+                    //                             console.log(error);
+                    //                         } else {
+                    //                             console.log('Email sent: ' + info.response);
+                    //                         }
+                    //                     });
+                    // >>>>>>> 04b91297f588ca0467e02ca1389c5c2b8851191b
 
 
 
                     res.send({
-                        status: '200',
+                        status: 200,
                         message: 'user registered',
                     })
                 } else {
                     res.send({
-                        status: '400',
+                        status: 400,
                         message: 'failed'
                     })
                 }
@@ -178,11 +179,11 @@ router.post('/signup?', (req, res) => {
 router.post('/socialsignup?', (req, res) => {
     var pass = md5(req.query.password);
     var date = moment().format('YYYY-MM-DD HH:mm:ss');
-    conn.query('select * from members where emil=? or usernme=?', [req.query.email, req.query.username], (err, row11) => {
+    conn.query('select * from members where email=? or username=?', [req.query.email, req.query.username], (err, row11) => {
 
         if (row11.length > 0) {
             res.send({
-                status: '400',
+                status: 400,
                 message: 'email or user already exist',
             })
 
@@ -194,12 +195,12 @@ router.post('/socialsignup?', (req, res) => {
                 if (!err) {
 
                     res.send({
-                        status: '200',
+                        status: 200,
                         message: 'user registered',
                     })
                 } else {
                     res.send({
-                        status: '400',
+                        status: 400,
                         message: 'failed'
                     })
                 }
@@ -218,7 +219,7 @@ router.post('/forget?', (req, res) => {
 
         if (row11.length == 0) {
             res.send({
-                status: '400',
+                status: 400,
                 message: 'email not valid',
             })
 
@@ -257,12 +258,12 @@ router.post('/forget?', (req, res) => {
                 if (!err) {
 
                     res.send({
-                        status: '200',
+                        status: 200,
                         message: 'otp send',
                     })
                 } else {
                     res.send({
-                        status: '400',
+                        status: 400,
                         message: 'failed'
                     })
                 }
@@ -282,7 +283,7 @@ router.put('/checkotp?', (req, res) => {
 
         if (row11.length == 0) {
             res.send({
-                status: '400',
+                status: 400,
                 message: 'otp not verified',
             })
         }
@@ -290,7 +291,7 @@ router.put('/checkotp?', (req, res) => {
             conn.query('update members set otp=? where email=?', ['', req.query.email], (err, row) => {
 
                 res.send({
-                    status: '200',
+                    status: 200,
                     message: 'otp verified',
                 })
 
@@ -315,7 +316,7 @@ router.put('/changepassword?', (req, res) => {
         if (!err) {
 
             res.send({
-                status: '200',
+                status: 200,
                 message: 'password change successfully',
             })
 
@@ -337,7 +338,7 @@ router.put('/logout?', (req, res) => {
         if (!err) {
 
             res.send({
-                status: '200',
+                status: 200,
                 message: 'logout successfully',
             })
 
@@ -360,7 +361,7 @@ router.put('/updateprofile?', (req, res) => {
 
                 if (!err) {
                     res.send({
-                        status: '200',
+                        status: 200,
                         message: 'Profile Updated Successfully'
                     })
                 }
@@ -368,7 +369,7 @@ router.put('/updateprofile?', (req, res) => {
         }
         else {
             res.send({
-                status: '400',
+                status: 400,
                 message: 'User Not Exist'
             })
         }
@@ -404,12 +405,12 @@ router.post('/upload', upload.single('image'), (req, res) => {
             if (!err) {
 
                 res.send({
-                    status: '200',
+                    status: 200,
                     message: 'picture uploaded',
                 })
             } else {
                 res.send({
-                    status: '400',
+                    status: 400,
                     message: 'not uploaded'
                 })
             }
@@ -504,14 +505,14 @@ router.get('/myservices?', (req, res) => {
         if (row12.length > 0) {
 
             res.send({
-                status: '200',
+                status: 200,
                 services: row12
             })
 
         }
         else {
             res.send({
-                status: '400',
+                status: 400,
                 services: []
             })
         }
@@ -522,9 +523,198 @@ router.get('/myservices?', (req, res) => {
 //end
 
 
+//chat between users
 
 
+router.post('/chat?', upload.single('file'), (req, res) => {
+    // console.log(req.file.path);
 
+    var date = moment().format('YYYY-MM-DD HH:mm:ss');
+    conn.query('insert into chats(chat_from,chat_to,content,file_path,chat_type,date_time,chat_from_time,chat_to_time,chat_utc_time,timezone,from_delete_sts,to_delete_sts,status) values(?,?,?,?,?,?,?,?,?,?,?,?,?)', [req.query.chat_from, req.query.chat_to, req.query.content, req.file.path, 1, date, req.query.chat_from_time, req.query.chat_to_time, req.query.chat_utc_time, req.query.timezone, 0, 0, 0], (err, row) => {
+
+        if (!err) {
+
+            res.send({
+                status: 200,
+                message: 'chat sent to user successfully'
+            })
+
+        }
+        else {
+            res.send({
+                status: 400,
+                message: 'chat not send',
+                err: err
+            })
+        }
+
+    })
+
+
+})
+//end
+
+
+//users favourites gigs
+
+router.post('/gig_fav?', (req, res) => {
+
+    conn.query('insert into favourites(user_id,gig_id) values(?,?)', [req.query.user_id, req.query.gig_id], (err, row) => {
+
+        if (!err) {
+
+            res.send({
+                status: 200,
+                message: 'gig added to favourite successfully'
+            })
+        }
+        else {
+
+            res.send({
+
+                status: 400,
+                message: 'failed'
+            })
+        }
+    })
+
+
+})
+
+//end
+
+//users remove favourites gigs
+
+router.delete('/remove_gig_fav?', (req, res) => {
+
+    conn.query('delete from favourites where user_id=? and gig_id=?', [req.query.user_id, req.query.gig_id], (err, row) => {
+
+        if (!err) {
+
+            res.send({
+                status: 200,
+                message: 'gig remove from favourite successfully'
+            })
+        }
+        else {
+
+            res.send({
+
+                status: 400,
+                message: 'failed'
+            })
+        }
+    })
+
+
+})
+
+//end
+
+//filter buyers request on seller gigs
+
+router.get('/request_on_gigs?', (req, res) => {
+
+    conn.query('select members.username,members.fullname,members.profilepicture,buyer_request.description,buyer_request.category_id,buyer_request.quantity,buyer_request.size,buyer_request.location,buyer_request.shipment,buyer_request.delivery_time,buyer_request.requested_image,colors.name from seller_offer LEFT JOIN buyer_request on seller_offer.request_id=buyer_request.sno LEFT join colors on buyer_request.color_id = colors.id left JOIN members on buyer_request.USERID = members.USERID where seller_offer.user_id=? and seller_offer.gig_id=? and buyer_request.status=0', [req.query.user_id, req.query.gig_id], (err, row) => {
+
+
+        if (row.length > 0) {
+            res.send({
+                status: 200,
+                requests: row
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                requests: []
+            })
+        }
+    })
+})
+
+
+//end
+
+
+//filter all gigs on buyer selecting category
+
+router.get('/gig_on_category?', (req, res) => {
+
+    conn.query('select sell_gigs.id,sell_gigs.title,sell_gigs.gig_price,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.category_id=?', [req.query.category_id], (err, row) => {
+
+        if (row.length > 0) {
+            res.send({
+                status: 200,
+                gigs: row
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                gigs: []
+            })
+        }
+    })
+
+})
+
+//end
+
+//single gig detail
+
+router.get('/single_gig_detail?',(req,res)=>{
+
+
+    conn.query('SELECT sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_date,members.fullname,members.username,members.profileviews,members.profilepicture,feedback.rating from sell_gigs LEFT JOIN members on sell_gigs.user_id= members.USERID LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.id=?',[req.query.gig_id],(err,row)=>{
+
+
+        if(row.length>0){
+            res.send({
+                status:200,
+                gig_detail:row
+            })
+        }
+        else{
+            res.send({
+                status:400,
+                gig_detail:[]
+            })
+        }
+    })
+})
+
+
+//end
+
+
+//all my request for buyer
+
+
+router.get('/myrequest?', (req, res) => {
+
+    conn.query('SELECT sno,description,date from buyer_request where USERID=?', [req.query.buyer_id], (err, row) => {
+
+        if (row.length > 0) {
+
+            res.send({
+                status: 200,
+                request: row
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                request: []
+            })
+        }
+
+    })
+
+
+})
+
+//end
 
 
 module.exports = router;
