@@ -20,18 +20,64 @@ router.post('/login?', (req, res) => {
     conn.query('select * from members where email = ?', [req.query.email], (err, row) => {
         if (row.length > 0) {
             const pass = md5(req.query.password);
-
             conn.query('select * from members where email = ? and password = ? ', [req.query.email, pass], (err1, row1) => {
 
                 if (row1.length > 0) {
-                    conn.query('update members set status = 0 where email = ?', [req.query.email], (err1, row2) => {
+                    if (row1[0].verified == 0) {
 
-                        res.send({
-                            status: 200,
-                            message: 'loggin',
-                            user: row1[0]
+                        conn.query('update members set status = 0 where email = ?', [req.query.email], (err1, row2) => {
+
+                            res.send({
+                                status: 200,
+                                message: 'loggin',
+                                user: row1[0]
+                            })
                         })
-                    })
+                    }
+                    else {
+                        var otp = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+
+                        var transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                                user: 'digitalinnovation13@gmail.com',
+                                pass: 'Allahisgreate'
+                            }
+                        });
+
+                        var mailOptions = {
+                            from: 'digitalinnovation13@gmail.com',
+                            to: req.query.email,
+                            subject: 'Account Verification',
+                            html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
+                        };
+
+                        transporter.sendMail(mailOptions, function (error, info) {
+                            if (error) {
+                                console.log(error);
+                            } else {
+                                console.log('Email sent: ' + info.response);
+                            }
+                        });
+
+                        conn.query('update members set otp = ? where email = ?', [otp, req.query.email], (err1, row222) => {
+                            if (!err) {
+
+                                res.send({
+                                    status: 300,
+                                    message: 'otp sent successfully',
+                                })
+                            }
+                            else {
+                                res.send({
+                                    status: 400,
+                                    message: 'failed',
+                                })
+                            }
+                        })
+
+
+                    }
                 } else {
                     res.send({
                         status: 400,
@@ -49,7 +95,7 @@ router.post('/login?', (req, res) => {
                     conn.query('select * from members where username = ? and password = ? and status = 0', [req.query.email, pass], (err1, row1) => {
 
                         if (row1.length > 0) {
-
+                            if (row1[0].verified == 0) {
                             conn.query('update members set status = 0 where username = ?', [req.query.email], (err1, row2) => {
 
                                 res.send({
@@ -58,6 +104,51 @@ router.post('/login?', (req, res) => {
                                     user: row1[0]
                                 })
                             })
+                        }
+                        else {
+                            var otp = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+    
+                            var transporter = nodemailer.createTransport({
+                                service: 'gmail',
+                                auth: {
+                                    user: 'digitalinnovation13@gmail.com',
+                                    pass: 'Allahisgreate'
+                                }
+                            });
+    
+                            var mailOptions = {
+                                from: 'digitalinnovation13@gmail.com',
+                                to: req.query.email,
+                                subject: 'Account Verification',
+                                html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
+                            };
+    
+                            transporter.sendMail(mailOptions, function (error, info) {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    console.log('Email sent: ' + info.response);
+                                }
+                            });
+    
+                            conn.query('update members set otp = ? where email = ?', [otp, req.query.email], (err1, row222) => {
+                                if (!err) {
+    
+                                    res.send({
+                                        status: 300,
+                                        message: 'otp sent successfully',
+                                    })
+                                }
+                                else {
+                                    res.send({
+                                        status: 400,
+                                        message: 'failed',
+                                    })
+                                }
+                            })
+    
+    
+                        }
                         } else {
                             res.send({
                                 status: 400,
@@ -162,7 +253,8 @@ router.post('/signup?', (req, res) => {
                 } else {
                     res.send({
                         status: 400,
-                        message: 'failed'
+                        message: 'failed',
+                        err: err
                     })
                 }
 
@@ -288,7 +380,7 @@ router.put('/checkotp?', (req, res) => {
             })
         }
         else {
-            conn.query('update members set otp=? where email=?', ['', req.query.email], (err, row) => {
+            conn.query('update members set otp=?,verified=0 where email=?', ['', req.query.email], (err, row) => {
 
                 res.send({
                     status: 200,
@@ -641,7 +733,7 @@ router.get('/request_on_gigs?', (req, res) => {
 
 router.get('/gig_on_category?', (req, res) => {
 
-    conn.query('select sell_gigs.id,sell_gigs.title,sell_gigs.gig_price,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.category_id=?', [req.query.category_id], (err, row) => {
+    conn.query('select sell_gigs.id,sell_gigs.user_id,sell_gigs.title,sell_gigs.gig_price,sell_gigs.total_views,sell_gigs.currency_type,sell_gigs.cost_type,sell_gigs.delivering_time,sell_gigs.gig_tags,sell_gigs.category_id,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_desc,sell_gigs.super_fast_delivery_date,sell_gigs.requirements,sell_gigs.youtube_url,sell_gigs.vimeo_url,sell_gigs.created_date,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.category_id=?', [req.query.category_id], (err, row) => {
 
         if (row.length > 0) {
             res.send({
@@ -663,22 +755,22 @@ router.get('/gig_on_category?', (req, res) => {
 
 //single gig detail
 
-router.get('/single_gig_detail?',(req,res)=>{
+router.get('/single_gig_detail?', (req, res) => {
 
 
-    conn.query('SELECT sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_date,members.fullname,members.username,members.profileviews,members.profilepicture,feedback.rating from sell_gigs LEFT JOIN members on sell_gigs.user_id= members.USERID LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.id=?',[req.query.gig_id],(err,row)=>{
+    conn.query('SELECT sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_date,members.fullname,members.username,members.profileviews,members.profilepicture,feedback.rating from sell_gigs LEFT JOIN members on sell_gigs.user_id= members.USERID LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.id=?', [req.query.gig_id], (err, row) => {
 
 
-        if(row.length>0){
+        if (row.length > 0) {
             res.send({
-                status:200,
-                gig_detail:row
+                status: 200,
+                gig_detail: row
             })
         }
-        else{
+        else {
             res.send({
-                status:400,
-                gig_detail:[]
+                status: 400,
+                gig_detail: []
             })
         }
     })
