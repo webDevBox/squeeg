@@ -96,59 +96,59 @@ router.post('/login?', (req, res) => {
 
                         if (row1.length > 0) {
                             if (row1[0].verified == 0) {
-                            conn.query('update members set status = 0 where username = ?', [req.query.email], (err1, row2) => {
+                                conn.query('update members set status = 0 where username = ?', [req.query.email], (err1, row2) => {
 
-                                res.send({
-                                    status: 200,
-                                    message: 'loggin',
-                                    user: row1[0]
+                                    res.send({
+                                        status: 200,
+                                        message: 'loggin',
+                                        user: row1[0]
+                                    })
                                 })
-                            })
-                        }
-                        else {
-                            var otp = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-    
-                            var transporter = nodemailer.createTransport({
-                                service: 'gmail',
-                                auth: {
-                                    user: 'digitalinnovation13@gmail.com',
-                                    pass: 'Allahisgreate'
-                                }
-                            });
-    
-                            var mailOptions = {
-                                from: 'digitalinnovation13@gmail.com',
-                                to: req.query.email,
-                                subject: 'Account Verification',
-                                html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
-                            };
-    
-                            transporter.sendMail(mailOptions, function (error, info) {
-                                if (error) {
-                                    console.log(error);
-                                } else {
-                                    console.log('Email sent: ' + info.response);
-                                }
-                            });
-    
-                            conn.query('update members set otp = ? where email = ?', [otp, req.query.email], (err1, row222) => {
-                                if (!err) {
-    
-                                    res.send({
-                                        status: 300,
-                                        message: 'otp sent successfully',
-                                    })
-                                }
-                                else {
-                                    res.send({
-                                        status: 400,
-                                        message: 'failed',
-                                    })
-                                }
-                            })
-    
-    
-                        }
+                            }
+                            else {
+                                var otp = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+
+                                var transporter = nodemailer.createTransport({
+                                    service: 'gmail',
+                                    auth: {
+                                        user: 'digitalinnovation13@gmail.com',
+                                        pass: 'Allahisgreate'
+                                    }
+                                });
+
+                                var mailOptions = {
+                                    from: 'digitalinnovation13@gmail.com',
+                                    to: req.query.email,
+                                    subject: 'Account Verification',
+                                    html: '<html><body><center> <h3>Here is your otp</h3><h4>' + otp + '</h4> </center></body></html>'
+                                };
+
+                                transporter.sendMail(mailOptions, function (error, info) {
+                                    if (error) {
+                                        console.log(error);
+                                    } else {
+                                        console.log('Email sent: ' + info.response);
+                                    }
+                                });
+
+                                conn.query('update members set otp = ? where email = ?', [otp, req.query.email], (err1, row222) => {
+                                    if (!err) {
+
+                                        res.send({
+                                            status: 300,
+                                            message: 'otp sent successfully',
+                                        })
+                                    }
+                                    else {
+                                        res.send({
+                                            status: 400,
+                                            message: 'failed',
+                                        })
+                                    }
+                                })
+
+
+                            }
                         } else {
                             res.send({
                                 status: 400,
@@ -647,9 +647,144 @@ router.post('/chat?', upload.single('file'), (req, res) => {
 //end
 
 
+//users inbox
+
+router.get('/user_inbox?', (req, res) => {
+
+    conn.query('select chats.chat_from,members.user_profile_image,members.username,chats.content,chats.status,chats.date_time from chats left JOIN members on chats.chat_from_time = members.USERID where chats.chat_to = ?  GROUP BY chats.chat_from ORDER BY chats.date_time DESC', [req.query.id], (err, row) => {
+
+        if (row.length > 0) {
+
+            res.send({
+                status: 200,
+                chats: row
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                chats: []
+            })
+        }
+
+
+    })
+
+})
+
+//end
+
+//create buyer request
+
+router.post('/create_request?', upload.single('image'), (req, res) => {
+
+    const path = req.file.path;
+
+    console.log(req);
+    conn.query('INSERT INTO buyer_request(USERID,description,category_id,quantity,size,color_id,location,shipment,delivery_time,requested_image_url,requested_image,date,time,no_of_offers,status,country,state,city) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [req.query.user_id, req.query.description, req.query.category_id, req.query.quantity, req.query.size, req.query.color_id, req.query.location, req.query.shipment, req.query.delivery_time, path, path, req.query.date, req.query.time, 0, 0, req.query.country, req.query.state, req.query.city], (err, row) => {
+
+        if (!err) {
+
+            res.send({
+                status: 200,
+                message: 'request created successfully'
+            })
+        }
+        else {
+
+            res.send({
+
+                status: 400,
+                message: 'failed',
+                err: err
+            })
+        }
+    })
+
+})
+
+//end
+
+//colors
+
+router.get('/colors', (req, res) => {
+
+    conn.query('select * from  colors', (err, row) => {
+        if (row.length > 0) {
+            res.send({
+                status: 200,
+                colors: row
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                colors: []
+            })
+        }
+    })
+})
+
+//end
+
+//all request for seller
+
+router.get('/all_request_for_seller?', (req, res) => {
+
+    conn.query('select members.username,members.profilepicture,buyer_request.sno,buyer_request.description,buyer_request.requested_image_url,buyer_request.no_of_offers,buyer_request.delivery_time from buyer_request LEFT JOIN members on buyer_request.USERID = members.USERID where buyer_request.status=0', (err, row) => {
+
+        if (row.length > 0) {
+            res.send({
+                status: 200,
+                request: row
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                request: []
+            })
+        }
+    })
+})
+
+
+//end
+
+//accept offer by buyer
+
+router.put('/accept_offer?', (req, res) => {
+
+    conn.query('UPDATE seller_offer SET status=1 WHERE request_id=? and user_id=? AND sno=?', [req.query.request_id, req.query.user_id, req.query.sno], (err, row) => {
+        conn.query('UPDATE buyer_request SET status=1 WHERE sno=?', [req.query.request_id], (err, row1) => {
+
+            if (!err) {
+                res.send({
+                    status: 200,
+                    message: 'Offer Accepted'
+                })
+
+            }
+            else {
+                res.send({
+                    status: 400,
+                    message: 'failed'
+                })
+
+            }
+        })
+    })
+
+})
+
+//end
+
+
+
 //users favourites gigs
 
 router.post('/gig_fav?', (req, res) => {
+
 
     conn.query('insert into favourites(user_id,gig_id) values(?,?)', [req.query.user_id, req.query.gig_id], (err, row) => {
 
@@ -758,13 +893,13 @@ router.get('/gig_on_category?', (req, res) => {
 router.get('/single_gig_detail?', (req, res) => {
 
 
-    conn.query('SELECT sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_date,members.fullname,members.username,members.profileviews,members.profilepicture,feedback.rating from sell_gigs LEFT JOIN members on sell_gigs.user_id= members.USERID LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.id=?', [req.query.gig_id], (err, row) => {
+    conn.query('select sell_gigs.id,sell_gigs.user_id,sell_gigs.title,sell_gigs.gig_price,sell_gigs.total_views,sell_gigs.currency_type,sell_gigs.cost_type,sell_gigs.delivering_time,sell_gigs.gig_tags,sell_gigs.category_id,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_desc,sell_gigs.super_fast_delivery_date,sell_gigs.requirements,sell_gigs.youtube_url,sell_gigs.vimeo_url,sell_gigs.created_date,members.fullname,members.username,members.profileviews,members.profilepicture,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id LEFT JOIN members on sell_gigs.user_id= members.USERID  where sell_gigs.id=?', [req.query.gig_id], (err, row) => {
 
 
         if (row.length > 0) {
             res.send({
                 status: 200,
-                gig_detail: row
+                gig_detail: row[0]
             })
         }
         else {
