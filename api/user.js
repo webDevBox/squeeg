@@ -24,14 +24,28 @@ router.post('/login?', (req, res) => {
 
                 if (row1.length > 0) {
                     if (row1[0].verified == 0) {
-
                         conn.query('update members set status = 0 where email = ?', [req.query.email], (err1, row2) => {
+                            conn.query('select country from country where id = ?', [row1[0].country], (err, row121) => {
+                                conn.query('select state_name from states where state_id = ?', [row1[0].state], (err, row122) => {
+                                    conn.query('select city_name from cities where city_id = ?', [row1[0].city], (err, row123) => {
 
-                            res.send({
-                                status: 200,
-                                message: 'loggin',
-                                user: row1[0]
+                                        var new1 = [].concat(row121,row122,row123);
+                                      
+                                        var new11 = [...row1,...new1];
+
+                                        console.log(new11);
+
+                                        res.send({
+                                            status: 200,
+                                            message: 'loggin',
+                                            user: new11,
+                                            
+                                        })
+                                    })
+                                })
                             })
+
+
                         })
                     }
                     else {
@@ -269,35 +283,62 @@ router.post('/signup?', (req, res) => {
 //social register
 
 router.post('/socialsignup?', (req, res) => {
-    var pass = md5(req.query.password);
+
+    var ab = '12345678';
+    var pass = md5(ab);
     var date = moment().format('YYYY-MM-DD HH:mm:ss');
     conn.query('select * from members where email=? or username=?', [req.query.email, req.query.username], (err, row11) => {
 
         if (row11.length > 0) {
-            res.send({
-                status: 400,
-                message: 'email or user already exist',
-            })
 
+            conn.query('select * from members where email = ? and password = ? ', [req.query.email, pass], (err1, row1) => {
+
+                if (row1.length > 0) {
+
+
+                    res.send({
+                        status: 200,
+                        message: 'loggin',
+                        user: row1[0]
+                    })
+                }
+                else {
+                    res.send({
+                        status: 400,
+                        message: 'loggin failed use an other account',
+                        user: []
+                    })
+
+
+                }
+
+
+            })
 
         }
         else {
             conn.query('INSERT INTO members(email,password,verified,status,created_date) VALUES(?,?,?,?,?)', [req.query.email, pass, 0, 0, date], (err, row) => {
+                conn.query('select * from members where email = ?', [req.query.email], (err, ress) => {
 
-                if (!err) {
 
-                    res.send({
-                        status: 200,
-                        message: 'user registered',
-                    })
-                } else {
-                    res.send({
-                        status: 400,
-                        message: 'failed'
-                    })
-                }
+                    if (!err) {
 
+                        res.send({
+                            status: 200,
+                            message: 'user registered',
+                            user: ress[0]
+                        })
+                    } else {
+                        res.send({
+                            status: 400,
+                            message: 'failed',
+                            user: []
+                        })
+                    }
+
+                })
             })
+
         }
     })
 
@@ -370,29 +411,56 @@ router.post('/forget?', (req, res) => {
 
 //validate otp
 
-router.put('/checkotp?', (req, res) => {
-    conn.query('select * from members where email=? and otp=?', [req.query.email, req.query.otp], (err, row11) => {
+//profile update
 
-        if (row11.length == 0) {
-            res.send({
-                status: 400,
-                message: 'otp not verified',
-            })
-        }
-        else {
-            conn.query('update members set otp=?,verified=0 where email=?', ['', req.query.email], (err, row) => {
+router.put('/profileupdate?', (req, res) => {
+
+    // if (!req.query.password == '') {
+    //     const pass = md5(req.query.password);
+
+    //     conn.query('UPDATE members SET email=?, username=?, password=?, fullname=?, country=?, state=?, city=? WHERE USERID=?', [req.query.email, req.query.username, pass, req.query.fullname, req.query.country, req.query.state, req.query.city, req.query.id], (err, row) => {
+
+    //         if (!err) {
+    //             res.send({
+
+    //                 status: 200,
+    //                 message: 'profile updated'
+    //             })
+    //         }
+    //         else {
+
+    //             res.send({
+    //                 status: 400,
+    //                 message: 'failed'
+    //             })
+    //         }
+
+    //     })
+    // }
+    // else {
+        conn.query('UPDATE members SET username=?, fullname=?, country=?, state=?, city=? WHERE USERID=?', [req.query.username, req.query.fullname, req.query.country, req.query.state, req.query.city, req.query.id], (err, row) => {
+
+            if (!err) {
+                res.send({
+
+                    status: 200,
+                    message: 'profile updated'
+                })
+            }
+            else {
 
                 res.send({
-                    status: 200,
-                    message: 'otp verified',
+                    status: 400,
+                    message: 'failed'
                 })
+            }
+
+        })
+
+    //}
 
 
-            })
-        }
-    })
-
-});
+})
 
 //end
 
@@ -680,7 +748,7 @@ router.post('/create_request?', upload.single('image'), (req, res) => {
 
     const path = req.file.path;
 
-    console.log(req);
+    // console.log(req);
     conn.query('INSERT INTO buyer_request(USERID,description,category_id,quantity,size,color_id,location,shipment,delivery_time,requested_image_url,requested_image,date,time,no_of_offers,status,country,state,city) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [req.query.user_id, req.query.description, req.query.category_id, req.query.quantity, req.query.size, req.query.color_id, req.query.location, req.query.shipment, req.query.delivery_time, path, path, req.query.date, req.query.time, 0, 0, req.query.country, req.query.state, req.query.city], (err, row) => {
 
         if (!err) {
@@ -731,21 +799,44 @@ router.get('/colors', (req, res) => {
 
 router.get('/all_request_for_seller?', (req, res) => {
 
-    conn.query('select members.username,members.profilepicture,buyer_request.sno,buyer_request.description,buyer_request.requested_image_url,buyer_request.no_of_offers,buyer_request.delivery_time from buyer_request LEFT JOIN members on buyer_request.USERID = members.USERID where buyer_request.status=0', (err, row) => {
+    conn.query('select category_id from sell_gigs where user_id = ? group by category_id', [req.query.id], (err, row22) => {
 
-        if (row.length > 0) {
-            res.send({
-                status: 200,
-                request: row
-            })
+        if (row22.length > 0) {
+            var arr = [];
+            for (let i = 0; i < row22.length; i++) {
+
+                conn.query('select members.username,members.profilepicture,buyer_request.sno,buyer_request.description,buyer_request.created,buyer_request.requested_image_url,buyer_request.no_of_offers,buyer_request.delivery_time from buyer_request LEFT JOIN members on buyer_request.USERID = members.USERID where buyer_request.status=0 and buyer_request.category_id = ?', [row22[i].category_id], (err, row) => {
+
+
+                    if (row.length > 0) {
+                        arr.push(row);
+
+                    }
+
+
+
+                    if (row22.length - 1 == i) {
+                        res.send({
+                            status: 200,
+                            request: arr
+                        })
+                    }
+
+                })
+
+            }
         }
         else {
+
             res.send({
                 status: 400,
-                request: []
+                message: 'you are not allowed because you have not created any gig'
             })
         }
+
     })
+
+
 })
 
 

@@ -174,18 +174,40 @@ console.log('11');
         router.post('/buyer?', (req, res) => {
             var date = moment().format("YYYY-MM-DD");
             var time = moment().format("hh:mm");
+conn.query('select * from seller_offer where user_id = ? and request_id = ?',[req.query.user,req.query.request],(err,row33)=>{
+
+    if(row33.length > 0){
+
+        res.send({
+            status: 200,
+            message: 'Offer already Submitted',
+            offer:1
+        })
+
+    }
+    else{
 
             conn.query('insert into seller_offer(user_id,buyer_id,gig_id,request_id,revision,duration,description,budget,date,time,status) values(?,?,?,?,?,?,?,?,?,?,?)', [req.query.user, req.query.buyer, req.query.gig, req.query.request, req.query.revision, req.query.duration, req.query.description, req.query.budget, date, time, 0], (err, row) => {
                 conn.query('select no_of_offers from buyer_request where sno = ?',[req.query.request],(err,row11)=>{
+                    if(row11.length >0){
                     const add = row11[0].no_of_offers + 1;
                     conn.query('update buyer_request set no_of_offers=? where sno=?',[add,req.query.request],(err,row111)=>{
                         console.log(add);
                     })
+
+                }
+                else{
+
+                    conn.query('update buyer_request set no_of_offers=? where sno=?',[0,req.query.request],(err,row111)=>{
+                        console.log('0');
+                    })
+                }
                 })
                 if (!err) {
                     res.send({
                         status: 200,
-                        message: 'Offer Submitted'
+                        message: 'Offer Submitted',
+                        offer:0
                     })
                 }
                 else {
@@ -195,7 +217,9 @@ console.log('11');
                     })
                 }
             })
-
+        }
+    })
+    
         })
 
         //End
@@ -353,7 +377,7 @@ console.log('11');
         //seller offers on buyer request
 
         router.get('/alloffers?', (req, res) => {
-            conn.query('select seller_offer.sno,seller_offer.revision,seller_offer.duration,seller_offer.description,seller_offer.budget,sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,gigs_image.image_path from seller_offer left JOIN sell_gigs on seller_offer.gig_id=sell_gigs.id left join gigs_image on sell_gigs.id=gigs_image.gig_id where seller_offer.request_id=?', [req.query.id], (err1, row12) => {
+            conn.query('select members.username,members.description,members.profilepicture,seller_offer.sno,seller_offer.revision,seller_offer.duration,seller_offer.description,seller_offer.budget,sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,gigs_image.image_path from seller_offer left JOIN sell_gigs on seller_offer.gig_id=sell_gigs.id left join gigs_image on sell_gigs.id=gigs_image.gig_id left join members on seller_offer.user_id = members.USERID where seller_offer.request_id=?', [req.query.id], (err1, row12) => {
                 if (row12.length > 0) {
 
                     res.send({
