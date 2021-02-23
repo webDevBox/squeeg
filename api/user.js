@@ -441,10 +441,29 @@ router.put('/profileupdate?', (req, res) => {
         conn.query('UPDATE members SET username=?, fullname=?, country=?, state=?, city=? WHERE USERID=?', [req.query.username, req.query.fullname, req.query.country, req.query.state, req.query.city, req.query.id], (err, row) => {
 
             if (!err) {
-                res.send({
+                conn.query('select * from members where USERID = ?', [req.query.id], (err1, row1) => {
 
-                    status: 200,
-                    message: 'profile updated'
+                conn.query('select country from country where id = ?', [row1[0].country], (err, row121) => {
+                    conn.query('select state_name from states where state_id = ?', [row1[0].state], (err, row122) => {
+                        conn.query('select city_name from cities where city_id = ?', [row1[0].city], (err, row123) => {
+
+                            var new1 = [].concat(row121,row122,row123);
+                          
+                            var new11 = [...row1,...new1];
+
+                            console.log(new11);
+
+                            res.send({
+
+                                status: 200,
+                                message: 'profile updated',
+                                user:new11
+                            })
+                                
+                            })
+                        })
+                    })
+       
                 })
             }
             else {
