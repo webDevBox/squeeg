@@ -9,7 +9,11 @@ var fs = require('fs');
 var crypto = require('crypto');
 var path = require('path');
 const { Console } = require('console');
+var app = express();
 
+const http = require('http').Server(app);
+
+const io = require('socket.io')(http);
 
 
 //login api
@@ -411,6 +415,32 @@ router.post('/forget?', (req, res) => {
 
 //validate otp
 
+router.put('/checkotp?',(req,res)=>{
+    conn.query('select * from members where email=? and otp=?',[req.query.email,req.query.otp],(err,row11)=>{
+    
+    if(row11.length==0){
+        res.send({
+            status:'400',
+            message:'otp not verified',
+                 })
+    }
+    else{
+        conn.query('update members set otp=? where email=?',['',req.query.email],(err,row)=>{
+        
+                    res.send({
+                        status:'200',
+                        message:'otp verified',
+                             })
+
+
+                            })
+    }
+    })
+    
+    });
+
+//end
+
 //profile update
 
 router.put('/profileupdate?', (req, res) => {
@@ -704,6 +734,32 @@ router.get('/myservices?', (req, res) => {
 
 //chat between users
 
+// io.on('connection', function (socket) {
+//     console.log('A user connected');
+//     socket.on("chat message", msg => {
+
+      
+
+
+//         conn.query('insert into chats(chat_from,chat_to,content,status) values(?,?,?,?)', [msg.user_id, msg.friend_id,msg.message, 0], (err, row) => {
+
+//             var ab = msg.user_id + msg.friend_id;
+//             console.log(ab);
+//             console.log(msg)
+//             io.emit(ab, msg);
+
+//         })
+
+//     });
+//     //Whenever someone disconnects this piece of code executed
+//     socket.on('disconnect', function () {
+//         console.log('A user disconnected');
+//     });
+// });
+
+
+
+
 
 router.post('/chat?', upload.single('file'), (req, res) => {
     // console.log(req.file.path);
@@ -734,11 +790,46 @@ router.post('/chat?', upload.single('file'), (req, res) => {
 //end
 
 
+//user chat history
+
+router.get('/chat_history?',(req,res)=>{
+
+    conn.query('SELECT chat_from,chat_to,content,date_time FROM chats WHERE (chat_from = ? AND chat_to = ?) OR (chat_to =? AND chat_from = ?) order by date_time asc', [req.query.chat_from, req.query.chat_to, req.query.chat_from, req.query.chat_to], (err, row) => {
+
+        conn.query('update chats set status=? where chat_from=? and chat_to=?', [1, req.query.chat_to, req.query.chat_from], (err, row3333) => {
+
+            if (row.length > 0) {
+
+                res.send({
+
+                    status: 'true',
+                    messages: row,
+
+                })
+            }
+            else {
+                res.send({
+
+                    status: 'failed',
+                    messages: [],
+
+                })
+            }
+        })
+
+    })
+})
+
+
+
+//end
+
+
 //users inbox
 
 router.get('/user_inbox?', (req, res) => {
 
-    conn.query('select chats.chat_from,members.user_profile_image,members.username,chats.content,chats.status,chats.date_time from chats left JOIN members on chats.chat_from_time = members.USERID where chats.chat_to = ?  GROUP BY chats.chat_from ORDER BY chats.date_time DESC', [req.query.id], (err, row) => {
+    conn.query('select chats.chat_from,members.user_profile_image,members.username,chats.status,chats.content,chats.status,chats.date_time from chats left JOIN members on chats.chat_from_time = members.USERID where chats.chat_to = ?  GROUP BY chats.chat_from ORDER BY chats.date_time DESC', [req.query.id], (err, row) => {
 
         if (row.length > 0) {
 
