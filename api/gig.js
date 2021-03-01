@@ -299,25 +299,14 @@ router.get('/allgigs?', (req, res) => {
 
 router.get('/gigs?', (req, res) => {
 
-    conn.query('select sell_gigs.id,favourites.gig_id as favourites,sell_gigs.user_id,sell_gigs.title,sell_gigs.gig_price,sell_gigs.total_views,sell_gigs.currency_type,sell_gigs.cost_type,sell_gigs.delivering_time,sell_gigs.gig_tags,sell_gigs.category_id,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_desc,sell_gigs.super_fast_delivery_date,sell_gigs.requirements,sell_gigs.youtube_url,sell_gigs.vimeo_url,sell_gigs.created_date,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id LEFT JOIN favourites on sell_gigs.id = favourites.gig_id where favourites.user_id=?', [req.query.id], (err1, row12) => {
-       console.log(err1);
+    conn.query('select sell_gigs.id,favourites.gig_id as favourites,sell_gigs.user_id,sell_gigs.title,sell_gigs.gig_price,sell_gigs.total_views,sell_gigs.currency_type,sell_gigs.cost_type,sell_gigs.delivering_time,sell_gigs.gig_tags,sell_gigs.category_id,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_desc,sell_gigs.super_fast_delivery_date,sell_gigs.requirements,sell_gigs.youtube_url,sell_gigs.vimeo_url,sell_gigs.created_date,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id LEFT JOIN favourites on sell_gigs.id = favourites.gig_id', (err1, row12) => {
         if (row12.length > 0) {
 
-            for (var i = 0; i < row12.length; i++) {
 
-                conn.query('select sell_gigs.id,sell_gigs.user_id,sell_gigs.title,sell_gigs.gig_price,sell_gigs.total_views,sell_gigs.currency_type,sell_gigs.cost_type,sell_gigs.delivering_time,sell_gigs.gig_tags,sell_gigs.category_id,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_desc,sell_gigs.super_fast_delivery_date,sell_gigs.requirements,sell_gigs.youtube_url,sell_gigs.vimeo_url,sell_gigs.created_date,gigs_image.image_path,feedback.rating from sell_gigs LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on sell_gigs.id = feedback.gig_id where sell_gigs.id !=?', [row12[i].id], (err1, row13) => {
-row12.push(row13)
-                    if (row12.length - 1 == i) {
-                        res.send({
-                            status: 200,
-                            gigs: row12
-                        })
-                    }
-                })
-
-            }
-
-
+            res.send({
+                status: 200,
+                gigs: row12
+            })
         }
         else {
             res.send({
@@ -330,6 +319,34 @@ row12.push(row13)
 
 });
 //end
+
+//favourit gigs
+
+
+router.get('/favourite_gigs?', (req, res) => {
+
+    conn.query('select sell_gigs.id,favourites.gig_id as favourites,sell_gigs.user_id,sell_gigs.title,sell_gigs.gig_price,sell_gigs.total_views,sell_gigs.currency_type,sell_gigs.cost_type,sell_gigs.delivering_time,sell_gigs.gig_tags,sell_gigs.category_id,sell_gigs.gig_details,sell_gigs.super_fast_charges,sell_gigs.super_fast_delivery_desc,sell_gigs.super_fast_delivery_date,sell_gigs.requirements,sell_gigs.youtube_url,sell_gigs.vimeo_url,sell_gigs.created_date,gigs_image.image_path,feedback.rating from favourites LEFT JOIN sell_gigs on favourites.gig_id = sell_gigs.id LEFT join gigs_image on sell_gigs.id = gigs_image.gig_id LEFT JOIN feedback on feedback.gig_id=sell_gigs.id where favourites.user_id = ? ',[req.query.id], (err1, row12) => {
+   console.log(err1);     
+        if (row12.length > 0) {
+
+
+            res.send({
+                status: 200,
+                gigs: row12
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                gigs: []
+            })
+        }
+    })
+
+
+});
+//end
+
 
 //popular gigs
 

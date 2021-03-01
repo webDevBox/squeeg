@@ -33,9 +33,9 @@ router.post('/login?', (req, res) => {
                                 conn.query('select state_name from states where state_id = ?', [row1[0].state], (err, row122) => {
                                     conn.query('select city_name from cities where city_id = ?', [row1[0].city], (err, row123) => {
 
-                                        var new1 = [].concat(row121,row122,row123);
-                                      
-                                        var new11 = [...row1,...new1];
+                                        var new1 = [].concat(row121, row122, row123);
+
+                                        var new11 = [...row1, ...new1];
 
                                         console.log(new11);
 
@@ -43,7 +43,7 @@ router.post('/login?', (req, res) => {
                                             status: 200,
                                             message: 'loggin',
                                             user: new11,
-                                            
+
                                         })
                                     })
                                 })
@@ -415,29 +415,29 @@ router.post('/forget?', (req, res) => {
 
 //validate otp
 
-router.put('/checkotp?',(req,res)=>{
-    conn.query('select * from members where email=? and otp=?',[req.query.email,req.query.otp],(err,row11)=>{
-    
-    if(row11.length==0){
-        res.send({
-            status:'400',
-            message:'otp not verified',
-                 })
-    }
-    else{
-        conn.query('update members set otp=? where email=?',['',req.query.email],(err,row)=>{
-        
-                    res.send({
-                        status:'200',
-                        message:'otp verified',
-                             })
+router.put('/checkotp?', (req, res) => {
+    conn.query('select * from members where email=? and otp=?', [req.query.email, req.query.otp], (err, row11) => {
+
+        if (row11.length == 0) {
+            res.send({
+                status: '400',
+                message: 'otp not verified',
+            })
+        }
+        else {
+            conn.query('update members set otp=? where email=?', ['', req.query.email], (err, row) => {
+
+                res.send({
+                    status: '200',
+                    message: 'otp verified',
+                })
 
 
-                            })
-    }
+            })
+        }
     })
-    
-    });
+
+});
 
 //end
 
@@ -468,18 +468,18 @@ router.put('/profileupdate?', (req, res) => {
     //     })
     // }
     // else {
-        conn.query('UPDATE members SET username=?, fullname=?, country=?, state=?, city=? WHERE USERID=?', [req.query.username, req.query.fullname, req.query.country, req.query.state, req.query.city, req.query.id], (err, row) => {
+    conn.query('UPDATE members SET username=?, fullname=?, country=?, state=?, city=? WHERE USERID=?', [req.query.username, req.query.fullname, req.query.country, req.query.state, req.query.city, req.query.id], (err, row) => {
 
-            if (!err) {
-                conn.query('select * from members where USERID = ?', [req.query.id], (err1, row1) => {
+        if (!err) {
+            conn.query('select * from members where USERID = ?', [req.query.id], (err1, row1) => {
 
                 conn.query('select country from country where id = ?', [row1[0].country], (err, row121) => {
                     conn.query('select state_name from states where state_id = ?', [row1[0].state], (err, row122) => {
                         conn.query('select city_name from cities where city_id = ?', [row1[0].city], (err, row123) => {
 
-                            var new1 = [].concat(row121,row122,row123);
-                          
-                            var new11 = [...row1,...new1];
+                            var new1 = [].concat(row121, row122, row123);
+
+                            var new11 = [...row1, ...new1];
 
                             console.log(new11);
 
@@ -487,24 +487,24 @@ router.put('/profileupdate?', (req, res) => {
 
                                 status: 200,
                                 message: 'profile updated',
-                                user:new11
+                                user: new11
                             })
-                                
-                            })
+
                         })
                     })
-       
                 })
-            }
-            else {
 
-                res.send({
-                    status: 400,
-                    message: 'failed'
-                })
-            }
+            })
+        }
+        else {
 
-        })
+            res.send({
+                status: 400,
+                message: 'failed'
+            })
+        }
+
+    })
 
     //}
 
@@ -738,7 +738,7 @@ router.get('/myservices?', (req, res) => {
 //     console.log('A user connected');
 //     socket.on("chat message", msg => {
 
-      
+
 
 
 //         conn.query('insert into chats(chat_from,chat_to,content,status) values(?,?,?,?)', [msg.user_id, msg.friend_id,msg.message, 0], (err, row) => {
@@ -792,7 +792,7 @@ router.post('/chat?', upload.single('file'), (req, res) => {
 
 //user chat history
 
-router.get('/chat_history?',(req,res)=>{
+router.get('/chat_history?', (req, res) => {
 
     conn.query('SELECT chat_from,chat_to,content,date_time FROM chats WHERE (chat_from = ? AND chat_to = ?) OR (chat_to =? AND chat_from = ?) order by date_time asc', [req.query.chat_from, req.query.chat_to, req.query.chat_from, req.query.chat_to], (err, row) => {
 
@@ -829,14 +829,31 @@ router.get('/chat_history?',(req,res)=>{
 
 router.get('/user_inbox?', (req, res) => {
 
-    conn.query('select chats.chat_from,members.user_profile_image,members.username,chats.status,chats.content,chats.status,chats.date_time from chats left JOIN members on chats.chat_from_time = members.USERID where chats.chat_to = ?  GROUP BY chats.chat_from ORDER BY chats.date_time DESC', [req.query.id], (err, row) => {
-
+    conn.query('select chats.chat_from,chats.chat_to,members.user_profile_image,members.username,chats.status,chats.content,chats.status,chats.date_time from chats left JOIN members on chats.chat_from_time = members.USERID where chats.chat_to = ?  GROUP BY chats.chat_from ORDER BY chats.date_time DESC', [req.query.id], (err, row) => {
         if (row.length > 0) {
 
+            // for (let i = 0; i < row.length; i++) {
+            //     console.log(row[i].chat_from);
+            //     conn.query('select chats.chat_from,chats.chat_to,members.user_profile_image,members.username,chats.status,chats.content,chats.status,chats.date_time from chats left JOIN members on chats.chat_from_time = members.USERID where chats.chat_to != ? and chats.chat_from = ?  GROUP BY chats.chat_to ORDER BY chats.date_time DESC', [row[i].chat_from, req.query.id], (err, row1) => {
+
+            //         for (let j = 0; j < row1.length; j++) {
+
+            //             if (row[i].chat_from !== row1[j].chat_to) {
+            //                 row.push(row1[j]);
+
+            //             }
+            //         }
+
+
+            //                    if (row.length - 1 == i) {
             res.send({
                 status: 200,
                 chats: row
             })
+            //         }
+            //     })
+            // }
+
         }
         else {
             res.send({
@@ -986,26 +1003,38 @@ router.put('/accept_offer?', (req, res) => {
 
 router.post('/gig_fav?', (req, res) => {
 
-
-    conn.query('insert into favourites(user_id,gig_id) values(?,?)', [req.query.user_id, req.query.gig_id], (err, row) => {
-
-        if (!err) {
-
+    conn.query('select * from favourites where user_id = ? and gig_id = ?', [req.query.user_id, req.query.gig_id], (err, row1) => {
+        if (row1.length > 0) {
             res.send({
-                status: 200,
-                message: 'gig added to favourite successfully'
+
+                status: 400,
+                message: 'Gig already in Favourit'
             })
         }
         else {
 
-            res.send({
 
-                status: 400,
-                message: 'failed'
+
+            conn.query('insert into favourites(user_id,gig_id) values(?,?)', [req.query.user_id, req.query.gig_id], (err, row) => {
+
+                if (!err) {
+
+                    res.send({
+                        status: 200,
+                        message: 'gig added to favourite successfully'
+                    })
+                }
+                else {
+
+                    res.send({
+
+                        status: 400,
+                        message: 'failed'
+                    })
+                }
             })
         }
     })
-
 
 })
 
