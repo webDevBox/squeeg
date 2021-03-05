@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+
+    <style>
+        .loader {
+            border: 8px solid #F3F3F3;
+            border-radius: 50%;
+            border-top: 8px solid green;
+            width: 60px;
+            height: 60px;
+            -webkit-animation: spin 2s linear infinite;
+            /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .center {
+            padding: 70px 0;
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body class="center">
+    <!-- <h1>Paypal</h1> -->
+    <form name="f1" action="/paypal">
+        <button id="a" style="display: none;" type="submit">Pay</button>
+    </form>
+    <center>
+        <div class="loader" style="margin-top: 50%;"></div>
+    </center>
+</body>
+<script>
+
+    window.onload = function () {
+        document.getElementById("a").click();
+    };
+</script>
+
+</html>
