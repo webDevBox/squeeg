@@ -425,7 +425,7 @@ router.put('/checkotp?', (req, res) => {
             })
         }
         else {
-            conn.query('update members set otp=? where email=?', ['', req.query.email], (err, row) => {
+            conn.query('update members set verified=?, status=?, otp=? where email=?', [0, 0, '', req.query.email], (err, row) => {
 
                 res.send({
                     status: '200',
@@ -559,6 +559,46 @@ router.put('/logout?', (req, res) => {
 
 //end
 
+//change order status by seller
+
+router.put('/change_order_status_seller?', (req, res) => {
+
+    conn.query('update payments set seller_status=? where id=?', [req.query.status, req.query.id], (err, row) => {
+
+        if (!err) {
+
+            res.send({
+                status: 200,
+                message: 'status successfully changed',
+            })
+
+        }
+
+    })
+
+});
+
+//end
+//complete request declind by seller
+
+router.put('/change_order_status_seller?', (req, res) => {
+
+    conn.query('update payments set seller_status=? where id=?', [req.query.status, req.query.id], (err, row) => {
+
+        if (!err) {
+
+            res.send({
+                status: 200,
+                message: 'status successfully changed',
+            })
+
+        }
+
+    })
+
+});
+
+//end
 
 
 //Update Profile
@@ -707,6 +747,55 @@ router.get('/city?', (req, res) => {
 
 //End
 
+
+//order Api
+
+router.get('/orders?', (req, res) => {
+
+
+    if (req.query.role == 1) {
+        conn.query('select members.username as seller_name,members.profilepicture,payments.seller_status,payments.created_at as order_date,payments.item_amount,payments.id as order_id,buyer_request.delivery_time,sell_gigs.title from payments left join members on payments.seller_id = members.USERID LEFT join sell_gigs on payments.gigs_id = sell_gigs.id left join buyer_request on payments.USERID = buyer_request.USERID where payments.USERID = ?', [req.query.id], (err, row) => {
+            if (!err && row.length > 0) {
+                res.send({
+                    status: 200,
+                    order: row
+                })
+            }
+            else {
+                res.send({
+                    status: 400,
+                    order: []
+                })
+            }
+        })
+
+    }
+    else if (req.query.role == 0) {
+        conn.query('select members.username as buyer_name,members.profilepicture,payments.seller_status,payments.created_at as order_date,payments.item_amount,payments.id as order_id,buyer_request.delivery_time,sell_gigs.title from payments left join members on payments.USERID = members.USERID LEFT join sell_gigs on payments.gigs_id = sell_gigs.id left join buyer_request on payments.USERID = buyer_request.USERID where payments.seller_id = ?', [req.query.id], (err, row) => {
+            if (!err && row.length > 0) {
+                res.send({
+                    status: 200,
+                    order: row
+                })
+            }
+            else {
+                res.send({
+                    status: 400,
+                    order: []
+                })
+            }
+        })
+
+    }
+
+
+});
+
+//End
+
+
+
+
 //my services
 
 router.get('/myservices?', (req, res) => {
@@ -789,6 +878,32 @@ router.post('/chat?', upload.single('file'), (req, res) => {
 })
 //end
 
+//add payment details
+
+router.post('/payments?', (req, res) => {
+    var date = moment().format('YYYY-MM-DD HH:mm:ss');
+
+    conn.query('INSERT into payments (USERID,gigs_id,seller_id,item_amount,created_at,pay_method,seller_status,delivery_date,source) VALUES(?,?,?,?,?,?,?,?,?)', [req.query.u_id, req.query.g_id, req.query.s_id, req.query.amount, date, req.query.method, 3, date, req.query.source,], (err, row) => {
+        if (!err) {
+            res.send({
+                status: 200,
+                user: row,
+                message: 'payment detail inserted'
+            })
+        }
+        else {
+            res.send({
+                status: 400,
+                message: 'failed'
+            })
+
+        }
+
+    })
+
+})
+
+//end
 
 //user chat history
 

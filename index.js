@@ -18,7 +18,14 @@ app.set("view engine", "ejs");
 const io = require('socket.io')(http);
 
 
-//get customer credit card token 
+
+
+//================================================================================================
+                                    //stripe integration
+//================================================================================================
+
+
+//get customer credit card token `
 app.post('/pay?', async (req, res) => {
 
     const stripe = require('stripe')('sk_test_51IQm8LHPMTxyWoKb3L0QjZkI96vOgwMuIwIhbzg5QL3lqHQvo43KxQrGSyBSgxBWiMKmUSgPeTjDuiXfM19tNm9100XCSoZcU9');
@@ -64,7 +71,7 @@ app.post('/payments',  async (req, res) => {
     //Charge the user's card:
    
         var charge = await stripe.charges.create({
-            amount: req.query.amount,
+            amount: req.query.amount*100,
             currency: "usd",
             description: "test charge",
             source: req.query.token,
@@ -87,7 +94,9 @@ app.post('/payments',  async (req, res) => {
 
 
 
-
+//================================================================================================
+                                    //paypal integration
+//================================================================================================
 
 
 paypal.configure({
@@ -109,8 +118,8 @@ app.get("/paypal", (req, res) => {
             payment_method: "paypal"
         },
         redirect_urls: {
-            return_url: "http://localhost:3000/success",
-            cancel_url: "http://localhost:3000/cancel"
+            return_url: "https://c7e2c130362d.ngrok.io/success",
+            cancel_url: "https://c7e2c130362d.ngrok.io/cancel"
         },
         transactions: [
             {
@@ -119,7 +128,7 @@ app.get("/paypal", (req, res) => {
                         {
                             name: "item",
                             sku: "item",
-                            price: "1.00",
+                            price: "1",
                             currency: "USD",
                             quantity: 1
                         }
@@ -127,7 +136,7 @@ app.get("/paypal", (req, res) => {
                 },
                 amount: {
                     currency: "USD",
-                    total: "1.00"
+                    total: "1"
                 },
                 description: "This is the payment description."
             }
@@ -155,7 +164,7 @@ app.get("/success", (req, res) => {
             {
                 amount: {
                     currency: "USD",
-                    total: "1.00"
+                    total: "1"
                 }
             }
         ]

@@ -407,7 +407,7 @@ router.get('/latest_gigs?', (req, res) => {
 //seller offers on buyer request
 
 router.get('/alloffers?', (req, res) => {
-    conn.query('select members.username,members.description,members.profilepicture,seller_offer.sno,seller_offer.revision,seller_offer.duration,seller_offer.description,seller_offer.budget,sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,gigs_image.image_path from seller_offer left JOIN sell_gigs on seller_offer.gig_id=sell_gigs.id left join gigs_image on sell_gigs.id=gigs_image.gig_id left join members on seller_offer.user_id = members.USERID where seller_offer.request_id=?', [req.query.id], (err1, row12) => {
+    conn.query('select members.username,seller_offer.user_id,members.description,members.profilepicture,seller_offer.sno,seller_offer.revision,seller_offer.duration,seller_offer.description,seller_offer.budget,sell_gigs.id,sell_gigs.title,sell_gigs.gig_details,gigs_image.image_path from seller_offer left JOIN sell_gigs on seller_offer.gig_id=sell_gigs.id left join gigs_image on sell_gigs.id=gigs_image.gig_id left join members on seller_offer.user_id = members.USERID where seller_offer.request_id=?', [req.query.id], (err1, row12) => {
         if (row12.length > 0) {
 
             res.send({
