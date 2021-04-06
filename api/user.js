@@ -11,6 +11,8 @@ var path = require('path');
 const { Console } = require('console');
 var app = express();
 
+
+const abcd = [];
 const http = require('http').Server(app);
 
 const io = require('socket.io')(http);
